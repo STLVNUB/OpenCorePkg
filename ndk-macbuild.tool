@@ -1,12 +1,29 @@
 #!/bin/bash
 
-BUILDDIR=$(dirname "$0")
-pushd "$BUILDDIR" >/dev/null
-BUILDDIR=$(pwd)
-popd >/dev/null
+export GCC5_BIN="$HOME/opt/local/cross/bin/x86_64-clover-linux-gnu-"
+export NASM_PREFIX="$HOME/opt/local/bin/"
+export TOOLCHAIN=GCC5 #XCODE5
+export TARGETARCH=X64
+export BUILDTARGET=RELEASE
+export BUILDTHREADS=$(( NUMBER_OF_CPUS + 1 ))
+export WORKSPACE=${WORKSPACE:-}
+if [ "$0" == "/usr/local/bin/ocb" ]; then
+    echo "OK OpenCore Builder link installed"
+    LPATH=$(readlink -n "$0" )
+    declare -r BUILDDIR=$(dirname "${LPATH}")
+elif [ ! -f "/usr/local/bin/opb" ]; then
+    echo "link /usr/local/bin/ocb to $0"
+    echo "then type ocb to run ;)"
+    isLink=$(ls -l /usr/local/bin/ocb)
+   	unlink /usr/local/bin/ocb
+    sudo ln -s "$0" /usr/local/bin/ocb
+   	declare -r BUILDDIR=$(dirname "$0")
+else
+	declare -r BUILDDIR=$(dirname "$0")
+fi
 
 cd "$BUILDDIR"
-
+echo "Building with $TOOLCHAIN"
 prompt() {
   echo "$1"
   if [ "$FORCE_INSTALL" != "1" ]; then
@@ -168,22 +185,27 @@ fi
 
 source edksetup.sh || exit 1
 
-if [ "$SKIP_TESTS" != "1" ]; then
-  make -C BaseTools || exit 1
-  touch edk2.ready
+if  [[ ! -x "$EDK_TOOLS_PATH/Source/C/bin/GenFv" ]]; then
+        echo "Building tools as they are not found"
+        make -C "$WORKSPACE"/BaseTools CC="gcc -Wno-deprecated-declarations"
+        touch UDK.ready
+
+fi
+if  [[ ! -x "$HOME/local/cross/bin/x86_64-clover-linux-gnu-make" ]]; then
+	cp -r /usr/bin/make $HOME/local/cross/bin/x86_64-clover-linux-gnu-make
 fi
 
 if [ "$SKIP_BUILD" != "1" ]; then
   if [ "$MODE" = "" ] || [ "$MODE" = "DEBUG" ]; then
-    build -a X64 -b DEBUG -t XCODE5 -p OpenCorePkg/OpenCorePkg.dsc || exit 1
+    build -a X64 -b DEBUG -t $TOOLCHAIN -n $BUILDTHREADS -p OpenCorePkg/OpenCorePkg.dsc || exit 1
   fi
 
   if [ "$MODE" = "" ] || [ "$MODE" = "DEBUG" ]; then
-    build -a X64 -b NOOPT -t XCODE5 -p OpenCorePkg/OpenCorePkg.dsc || exit 1
+    build -a X64 -b NOOPT -t $TOOLCHAIN -n $BUILDTHREADS -p OpenCorePkg/OpenCorePkg.dsc || exit 1
   fi
 
   if [ "$MODE" = "" ] || [ "$MODE" = "RELEASE" ]; then
-    build -a X64 -b RELEASE -t XCODE5 -p OpenCorePkg/OpenCorePkg.dsc || exit 1
+    build -a X64 -b RELEASE -t $TOOLCHAIN -n $BUILDTHREADS -p OpenCorePkg/OpenCorePkg.dsc || exit 1
   fi
 fi
 
