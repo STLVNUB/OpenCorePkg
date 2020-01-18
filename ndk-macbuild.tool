@@ -25,7 +25,10 @@ if [ ! -f "/usr/local/bin/ocb" ]; then
     sudo ln -s "${dir}/${name}" /usr/local/bin/ocb
 fi
 cd "$BUILDDIR"
-pwd
+if [ $TOOLCHAIN == GCC5 ] && [ ! -d $GCC%_BIN ]; then
+	./build_gcc9.sh
+	wait
+fi	
 echo "Building with $TOOLCHAIN"
 prompt() {
   echo "$1"
