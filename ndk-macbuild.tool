@@ -1,7 +1,7 @@
 #!/bin/bash
 
-export GCC5_BIN="$HOME/opt/local/cross/bin/x86_64-clover-linux-gnu-"
-export NASM_PREFIX="$HOME/opt/local/bin/"
+export GCC5_BIN="$HOME/src/opt/local/cross/bin/x86_64-clover-linux-gnu-"
+export NASM_PREFIX="$HOME/src/opt/local/bin/"
 export TOOLCHAIN=GCC5 #XCODE5
 export TARGETARCH=X64
 export BUILDTARGET=RELEASE
@@ -203,9 +203,9 @@ if  [[ ! -x "$EDK_TOOLS_PATH/Source/C/bin/GenFv" ]]; then
         touch UDK.ready
 
 fi
-[ ! -d $HOME/opt/local/cross/bin ] && echo not GCC && exit 1
-if  [[ ! -x "$HOME/opt/local/cross/bin/x86_64-clover-linux-gnu-make" ]]; then
-	cp -r /usr/bin/make $HOME/opt/local/cross/bin/x86_64-clover-linux-gnu-make
+[ ! -d $HOME/src/opt/local/cross/bin ] && echo no GCC5 && exit 1
+if  [[ ! -x "$HOME/src/opt/local/cross/bin/x86_64-clover-linux-gnu-make" ]]; then
+	cp -r /usr/bin/make $HOME/src/opt/local/cross/bin/x86_64-clover-linux-gnu-make
 fi
 
 if [ "$SKIP_BUILD" != "1" ]; then
