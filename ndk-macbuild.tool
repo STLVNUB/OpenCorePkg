@@ -25,7 +25,7 @@ if [ ! -f "/usr/local/bin/ocb" ]; then
     sudo ln -s "${dir}/${name}" /usr/local/bin/ocb
 fi
 cd "$BUILDDIR"
-if [ $TOOLCHAIN == GCC5 ] && [ ! -d $GCC%_BIN ]; then
+if [ $TOOLCHAIN == GCC5 ] && [ ! -d $GCC5_BIN ]; then
 	./build_gcc9.sh
 	wait
 fi	
