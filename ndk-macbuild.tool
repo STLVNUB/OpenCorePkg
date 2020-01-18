@@ -25,7 +25,7 @@ if [ ! -f "/usr/local/bin/ocb" ]; then
     sudo ln -s "${dir}/${name}" /usr/local/bin/ocb
 fi
 cd "$BUILDDIR"
-if [ $TOOLCHAIN == GCC5 ] && [ ! -d $GCC5_BIN ]; then
+if [[ "$TOOLCHAIN" == "GCC5"  && ! -d "$HOME/src/opt/local/cross/bin/" ]]; then
 	./build_gcc9.sh
 	wait
 fi	
@@ -112,7 +112,7 @@ if [ "$(which clang)" = "" ] || [ "$(which git)" = "" ] || [ "$(clang -v 2>&1 | 
   echo "Missing Xcode tools, please install them!"
   exit 1
 fi
-
+if [ $TOOLCHAIN == XCODE5 ]; then
 if [ "$(nasm -v)" = "" ] || [ "$(nasm -v | grep Apple)" != "" ]; then
   echo "Missing or incompatible nasm!"
   echo "Download the latest nasm from http://www.nasm.us/pub/nasm/releasebuilds/"
@@ -129,6 +129,11 @@ if [ "$(nasm -v)" = "" ] || [ "$(nasm -v | grep Apple)" != "" ]; then
   sudo mv nasm*/ndisasm /usr/local/bin/ || exit 1
   rm -rf "${nasmzip}" nasm-*
   popd >/dev/null
+fi
+else
+  if [ ! -f ${NASM_PREFIX}nasm ]; then
+  	  "$BUILDDIR"/buildnasm.sh
+  fi
 fi
 
 if [ "$(which mtoc.NEW)" == "" ] || [ "$(which mtoc)" == "" ]; then
