@@ -7,22 +7,25 @@ export TARGETARCH=X64
 export BUILDTARGET=RELEASE
 export BUILDTHREADS=$(( NUMBER_OF_CPUS + 1 ))
 export WORKSPACE=${WORKSPACE:-}
-if [ "$0" == "/usr/local/bin/ocb" ]; then
+name=$(basename "$0")
+dir=$(dirname "$0")
+declare BUILDDIR=$(dirname "$0")
+if [ -f "/usr/local/bin/ocb" ]; then
     echo "OK OpenCore Builder link installed"
     LPATH=$(readlink -n "$0" )
     declare -r BUILDDIR=$(dirname "${LPATH}")
-elif [ ! -f "/usr/local/bin/opb" ]; then
+else
+	isLink=$(ls -l /usr/local/bin/ocb)
+   	unlink /usr/local/bin/ocb
+fi
+if [ ! -f "/usr/local/bin/ocb" ]; then
     echo "link /usr/local/bin/ocb to $0"
     echo "then type ocb to run ;)"
-    isLink=$(ls -l /usr/local/bin/ocb)
-   	unlink /usr/local/bin/ocb
-    sudo ln -s "$0" /usr/local/bin/ocb
-   	declare -r BUILDDIR=$(dirname "$0")
-else
-	declare -r BUILDDIR=$(dirname "$0")
+    echo "ln -s "$dir/$name" /usr/local/bin/ocb"
+    sudo ln -s "${dir}/${name}" /usr/local/bin/ocb
 fi
-
 cd "$BUILDDIR"
+pwd
 echo "Building with $TOOLCHAIN"
 prompt() {
   echo "$1"
@@ -35,8 +38,14 @@ prompt() {
 }
 
 updaterepo() {
+  echo $2
   if [ ! -d "$2" ]; then
     git clone "$1" -b "$3" --depth=1 "$2" || exit 1
+    if [ $2 == edk2 ]; then
+	    cd edk2
+    	touch edk2.ready
+    	cd ..
+    fi
   fi
   pushd "$2" >/dev/null
   git pull
@@ -191,8 +200,9 @@ if  [[ ! -x "$EDK_TOOLS_PATH/Source/C/bin/GenFv" ]]; then
         touch UDK.ready
 
 fi
-if  [[ ! -x "$HOME/local/cross/bin/x86_64-clover-linux-gnu-make" ]]; then
-	cp -r /usr/bin/make $HOME/local/cross/bin/x86_64-clover-linux-gnu-make
+[ ! -d $HOME/opt/local/cross/bin ] && echo not GCC && exit 1
+if  [[ ! -x "$HOME/opt/local/cross/bin/x86_64-clover-linux-gnu-make" ]]; then
+	cp -r /usr/bin/make $HOME/opt/local/cross/bin/x86_64-clover-linux-gnu-make
 fi
 
 if [ "$SKIP_BUILD" != "1" ]; then
